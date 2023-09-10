@@ -1,6 +1,6 @@
 import { HistoryLocation, HistoryState, START_LOCATION_NORMALIZED } from './history/common'
 import { App, shallowReactive, shallowRef } from 'vue';
-import { routeKey, routerKey } from './injection-symbol';
+import { RouterViewLocationKey, routeKey, routerKey } from './injection-symbol';
 import { RouterView } from './router-view';
 import type { DefineComponent } from 'vue';
 import { createRouterMatch } from './matcher';
@@ -9,6 +9,7 @@ export interface RouterHistory {
   go: (delta: number) => void;
   push(to: HistoryLocation, data?: HistoryState): void
   replace(to: HistoryLocation, data?: HistoryState): void
+  readonly location: HistoryLocation
 }
 
 declare type Lazy<T> = () => Promise<T>
@@ -57,8 +58,9 @@ export function createRouter(options: RouterOptions) {
   const go = (delta: number) => routerHistory.go(delta)
 
   const push = (
-    to: RouteLocationOptions
+    to: RouteLocationOptions | string
   ) => {
+    // TODO resolve
     const toLocation = to
     const data: HistoryState | undefined = to.state
     finalizeNavigation(
@@ -67,7 +69,11 @@ export function createRouter(options: RouterOptions) {
       false,
       data,
     )
+
+    // TODO markAsReady
   }
+
+  let started: boolean | undefined
 
   const router = {
     push,
@@ -78,14 +84,30 @@ export function createRouter(options: RouterOptions) {
       app.component('RouterView', RouterView)
       console.log(router, app)
 
+      if (
+        !started
+        && currentRoute.value === START_LOCATION_NORMALIZED) {
+        started = true
+        push(routerHistory.location)
+      }
+
       // app.config.globalProperties.
+      // 当前路由
       const activeRoute = {}
+
+      // 代理
+      const activeProxy = new Proxy(activeRoute, {
+        get: (target, key, receiver) => {
+          return Reflect.get(currentRoute, key, receiver)
+        }
+      })
 
       // 为useRouter
       app.provide(routerKey, router)
       // 为useRoute
-      app.provide(routeKey, shallowReactive(activeRoute))
-
+      app.provide(routeKey, shallowReactive(activeProxy))
+      // router-view
+      app.provide(RouterViewLocationKey, currentRoute)
     }
   }
 
