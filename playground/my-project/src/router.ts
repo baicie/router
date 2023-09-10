@@ -1,8 +1,8 @@
-import {createRouter} from '@baicie/router';
+import { createRouter, createWebHistory } from '@baicie/router';
 
 export const router = createRouter({
-  history,
-  routes:[
+  history: createWebHistory(),
+  routes: [
     {
       path: '/',
       redirect: 'login',
