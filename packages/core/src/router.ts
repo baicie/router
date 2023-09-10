@@ -31,7 +31,12 @@ export function createRouter(options: RouterOptions) {
 
   const go = (delta: number) => routerHistory.go(delta)
 
+  const push = () =>{
+    
+  }
+
   const router = {
+    push,
     go,
     install(app: App) {
       const router = this
