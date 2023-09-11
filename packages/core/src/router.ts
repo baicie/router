@@ -1,9 +1,10 @@
-import { HistoryLocation, HistoryState, START_LOCATION_NORMALIZED } from './history/common'
-import { App, shallowReactive, shallowRef } from 'vue';
-import { RouterViewLocationKey, routeKey, routerKey } from './injection-symbol';
-import { RouterView } from './router-view';
 import type { DefineComponent } from 'vue';
+import { App, shallowReactive, shallowRef } from 'vue';
+import { HistoryLocation, HistoryState, START_LOCATION_NORMALIZED } from './history/common';
+import { routeKey, routerKey } from './injection-symbol';
 import { createRouterMatch } from './matcher';
+import { parseQuery } from './query';
+import { RouterView } from './router-view';
 import { RouteLocationOptions } from './types';
 export interface RouterHistory {
   go: (delta: number) => void;
@@ -38,8 +39,8 @@ export function createRouter(options: RouterOptions) {
   const currentRoute = shallowRef<RouteLocationOptions>(
     START_LOCATION_NORMALIZED
   )
-  console.log(options, matcher.getAllMatchers())
 
+  // 最后跳转的逻辑
   function finalizeNavigation(
     toLocation: RouteLocationOptions,
     from: RouteLocationOptions,
@@ -55,14 +56,32 @@ export function createRouter(options: RouterOptions) {
     currentRoute.value = toLocation
   }
 
+  // 处理push参数
+  function resolve(
+    to: Readonly<RouteLocationOptions | string>
+  ): RouteLocationOptions {
+    if (typeof to === 'string') {
+      const query = parseQuery(to)
+      return {
+        path: to,
+        query,
+      }
+    } else {
+      const match = matcher.resolve(to)
+      return {
+        ...to,
+        ...match
+      }
+    }
+  }
+
   const go = (delta: number) => routerHistory.go(delta)
 
   const push = (
     to: RouteLocationOptions | string
   ) => {
-    // TODO resolve
-    const toLocation = to
-    const data: HistoryState | undefined = to.state
+    const toLocation = resolve(to)
+    const data: HistoryState | undefined = toLocation.state
     finalizeNavigation(
       toLocation,
       currentRoute.value,
@@ -82,7 +101,6 @@ export function createRouter(options: RouterOptions) {
       const router = this
 
       app.component('RouterView', RouterView)
-      console.log(router, app)
 
       if (
         !started
@@ -96,18 +114,20 @@ export function createRouter(options: RouterOptions) {
       const activeRoute = {}
 
       // 代理
-      const activeProxy = new Proxy(activeRoute, {
-        get: (target, key, receiver) => {
-          return Reflect.get(currentRoute, key, receiver)
-        }
-      })
+      // const activeProxy = new Proxy(activeRoute, {
+      //   get: (target, key, receiver) => {
+      //     return Reflect.get(currentRoute, key, receiver)
+      //   }
+      // })
 
       // 为useRouter
       app.provide(routerKey, router)
       // 为useRoute
-      app.provide(routeKey, shallowReactive(activeProxy))
+      app.provide(routeKey, shallowReactive(activeRoute))
       // router-view
-      app.provide(RouterViewLocationKey, currentRoute)
+      // app.provide(RouterViewLocationKey, currentRoute)
+
+      console.log(`Router`, app)
     }
   }
 

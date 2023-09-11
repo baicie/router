@@ -1,3 +1,4 @@
+import { stripBase } from "../location";
 import { assign } from "../utils";
 import { RouterHistory } from './../router';
 import { HistoryState, ValueContainer } from "./common";
@@ -8,6 +9,29 @@ interface StateEntry extends HistoryState {
   current: HistoryLocation,
   replaced: boolean
 }
+
+
+
+function createCurrentLocation(
+  base: string,
+  location: Location
+): HistoryLocation {
+  const { pathname, search, hash } = location
+  // allows hash bases like #, /#, #/, #!, #!/, /#!/, or even /folder#end
+  const hashPos = base.indexOf('#')
+  if (hashPos > -1) {
+    let slicePos = hash.includes(base.slice(hashPos))
+      ? base.slice(hashPos).length
+      : 1
+    let pathFromHash = hash.slice(slicePos)
+    // prepend the starting slash to hash so the url starts with /#
+    if (pathFromHash[0] !== '/') pathFromHash = '/' + pathFromHash
+    return stripBase(pathFromHash, '')
+  }
+  const path = stripBase(pathname, base)
+  return path + search + hash
+}
+
 function buildState(
   back: HistoryLocation | null,
   current: HistoryLocation,
@@ -20,13 +44,13 @@ function buildState(
   }
 }
 
-export function useHistoryStateNavigation() {
-  const { history } = window
+export function useHistoryStateNavigation(base: string) {
+  const { history, location } = window
   const historyState: ValueContainer<StateEntry> = {
     value: history.state
   }
   const currentLocation: ValueContainer<HistoryLocation> = {
-    value: ''
+    value: createCurrentLocation(base, location)
   }
   function changeLocation(
     to: HistoryLocation,
@@ -81,8 +105,8 @@ export function useHistoryStateNavigation() {
   }
 }
 
-export function createWebHistory() {
-  const historyNavigation = useHistoryStateNavigation()
+export function createWebHistory(base: string) {
+  const historyNavigation = useHistoryStateNavigation(base)
 
   function go(delta: number) {
     history.go(delta)
@@ -90,7 +114,8 @@ export function createWebHistory() {
 
   const routerHistory: RouterHistory = assign(
     {
-      go
+      location: '',
+      go,
     },
     historyNavigation
   )

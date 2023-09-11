@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from '@baicie/router';
 
 export const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory('/'),
   routes: [
     {
       path: '/',

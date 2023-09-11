@@ -1,5 +1,14 @@
 <script setup lang="ts">
+import { getCurrentInstance } from 'vue';
 import HelloWorld from './components/HelloWorld.vue'
+import {useRouter,useRoute } from '@baicie/router';
+const router = useRouter()
+const route = useRoute()
+const instance = getCurrentInstance()
+function handlePush() {
+  console.log('getCurrentInstance',instance)
+  console.log('handlePush',router,route)
+}
 </script>
 
 <template>
@@ -12,6 +21,7 @@ import HelloWorld from './components/HelloWorld.vue'
     </a>
   </div>
   <HelloWorld msg="Vite + Vue" />
+  <el-button @click="handlePush">handlePush</el-button>
 </template>
 
 <style scoped>

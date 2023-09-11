@@ -1,4 +1,5 @@
 import { RouteRecordRaw } from "./router";
+import { RouteLocationOptions } from "./types";
 
 export function createRouterMatch(
   routes: Readonly<RouteRecordRaw[]>
@@ -21,6 +22,10 @@ export function createRouterMatch(
     return matcher
   }
 
+  function resolve(to: Readonly<RouteLocationOptions>) {
+    return matcher.find(match => match.path === to.path)
+  }
+
   function insterMatcher(record: ReturnType<typeof normalizeRouteRecord>) {
     matcher.push(record)
   }
@@ -29,7 +34,8 @@ export function createRouterMatch(
 
   return {
     addRoute,
-    getAllMatchers
+    getAllMatchers,
+    resolve
   }
 }
 
