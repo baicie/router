@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { getCurrentInstance } from 'vue';
 import HelloWorld from './components/HelloWorld.vue'
-import {useRouter,useRoute } from '@baicie/router';
+import {useRouter,useRoute,RouterView } from '@baicie/router';
 const router = useRouter()
 const route = useRoute()
 const instance = getCurrentInstance()
@@ -20,6 +20,7 @@ function handlePush() {
       <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
     </a>
   </div>
+  <RouterView/>
   <HelloWorld msg="Vite + Vue" />
   <el-button @click="handlePush">handlePush</el-button>
 </template>
