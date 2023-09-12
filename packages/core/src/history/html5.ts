@@ -1,7 +1,7 @@
 import { stripBase } from "../location";
 import { assign } from "../utils";
 import { RouterHistory } from './../router';
-import { HistoryState, ValueContainer } from "./common";
+import { HistoryState, NavigationCallback, ValueContainer } from "./common";
 
 export type HistoryLocation = string
 interface StateEntry extends HistoryState {
@@ -58,6 +58,7 @@ export function useHistoryStateNavigation(base: string) {
     replace: boolean = false
   ): void {
     const url = to
+
     history[replace ? 'replaceState' : 'pushState'](state, '', url)
     historyState.value = state
   }
@@ -66,12 +67,12 @@ export function useHistoryStateNavigation(base: string) {
     to: HistoryLocation,
     state: StateEntry
   ) {
-    const currentState = assign(
-      {},
-      historyState.value,
-      history.state as Partial<StateEntry> | null,
-    )
-    changeLocation(currentState.current, currentState, true)
+    // const currentState = assign(
+    //   {},
+    //   historyState.value,
+    //   history.state as Partial<StateEntry> | null,
+    // )
+    // changeLocation(currentState.current ?? '/', currentState, true)
     // 
     // changeLocation()
     changeLocation(to, state, false)
@@ -99,14 +100,50 @@ export function useHistoryStateNavigation(base: string) {
     location: currentLocation,
     state: historyState,
 
-
     push,
     replace,
   }
 }
 
+export function useHistoryListeners() {
+  let listeners: NavigationCallback[] = []
+
+
+  function popStateHandler() {
+    console.log('popStateHandler')
+  }
+
+  function listen(callback: NavigationCallback) {
+    listeners.push(callback)
+  }
+
+  function destroy() {
+    window.removeEventListener('popstate', popStateHandler)
+  }
+
+  window.addEventListener('popstate', () => {
+    console.log('popstate')
+  })
+
+  window.addEventListener('beforeunload', () => {
+    console.log('beforeunload')
+  }, {
+    passive: true,
+  })
+
+  window.onpopstate = () => {
+    console.log('onpopstate11');
+  }
+
+  return {
+    listen,
+    destroy
+  }
+}
+
 export function createWebHistory(base: string) {
   const historyNavigation = useHistoryStateNavigation(base)
+  const historyListener = useHistoryListeners()
 
   function go(delta: number) {
     history.go(delta)
@@ -117,7 +154,8 @@ export function createWebHistory(base: string) {
       location: '',
       go,
     },
-    historyNavigation
+    historyNavigation,
+    historyListener
   )
 
   return routerHistory

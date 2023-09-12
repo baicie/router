@@ -24,3 +24,10 @@ export const START_LOCATION_NORMALIZED: RouteRecordRaw = {
   path: '/',
   name: undefined,
 }
+
+export interface NavigationCallback {
+  (
+    to: HistoryLocation,
+    from: HistoryLocation
+  ): void
+}

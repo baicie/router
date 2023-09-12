@@ -5,9 +5,8 @@ import {useRouter,useRoute,RouterView } from '@baicie/router';
 const router = useRouter()
 const route = useRoute()
 const instance = getCurrentInstance()
-function handlePush() {
-  console.log('getCurrentInstance',instance)
-  console.log('handlePush',router,route)
+function handlePush() {  
+  router.push('/login')
 }
 </script>
 

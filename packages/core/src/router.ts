@@ -1,7 +1,7 @@
 import type { DefineComponent } from 'vue';
-import { App, shallowReactive, shallowRef } from 'vue';
-import { HistoryLocation, HistoryState, START_LOCATION_NORMALIZED } from './history/common';
-import { routeKey, routerKey } from './injection-symbol';
+import { App, shallowRef } from 'vue';
+import { HistoryLocation, HistoryState, NavigationCallback, START_LOCATION_NORMALIZED } from './history/common';
+import { routerViewLocationKey, routeKey, routerKey } from './injection-symbol';
 import { createRouterMatch } from './matcher';
 import { parseQuery } from './query';
 import { RouterView } from './router-view';
@@ -11,6 +11,10 @@ export interface RouterHistory {
   push(to: HistoryLocation, data?: HistoryState): void
   replace(to: HistoryLocation, data?: HistoryState): void
   readonly location: HistoryLocation
+
+  // 监听相关类型
+  listen(callback: NavigationCallback): void
+  destroy(): void
 }
 
 declare type Lazy<T> = () => Promise<T>
@@ -47,10 +51,11 @@ export function createRouter(options: RouterOptions) {
     replace?: boolean,
     data?: HistoryState
   ) {
+    console.log('toLocation', toLocation)
     if (replace) {
       // routerHistory.replace()
     } else {
-      // 
+      routerHistory.push(toLocation.path)
     }
 
     currentRoute.value = toLocation
@@ -75,12 +80,21 @@ export function createRouter(options: RouterOptions) {
     }
   }
 
+  // 
+  function setupListeners() {
+    routerHistory.listen(() => {
+      console.log('router history listening')
+    })
+  }
+
   const go = (delta: number) => routerHistory.go(delta)
 
   const push = (
     to: RouteLocationOptions | string
   ) => {
+    console.log('push', to)
     const toLocation = resolve(to)
+    console.log('toLocation', toLocation)
     const data: HistoryState | undefined = toLocation.state
     finalizeNavigation(
       toLocation,
@@ -94,7 +108,7 @@ export function createRouter(options: RouterOptions) {
 
   let started: boolean | undefined
 
-  const router = {
+  const router: Router = {
     push,
     go,
     install(app: App) {
@@ -114,22 +128,29 @@ export function createRouter(options: RouterOptions) {
       const activeRoute = {}
 
       // 代理
-      // const activeProxy = new Proxy(activeRoute, {
-      //   get: (target, key, receiver) => {
-      //     return Reflect.get(currentRoute, key, receiver)
-      //   }
-      // })
+      const activeProxy = new Proxy(activeRoute, {
+        get: (target, key, receiver) => {
+          return Reflect.get(currentRoute, key, receiver)
+        }
+      })
 
       // 为useRouter
       app.provide(routerKey, router)
       // 为useRoute
-      app.provide(routeKey, shallowReactive(activeRoute))
+      app.provide(routeKey, activeProxy)
       // router-view
-      // app.provide(RouterViewLocationKey, currentRoute)
+      app.provide(routerViewLocationKey, currentRoute)
 
+      setupListeners()
       console.log(`Router`, app)
     }
   }
 
   return router
+}
+
+export interface Router {
+  push: (to: RouteLocationOptions | string) => void
+  go: (delta: number) => void
+  install(app: App): void
 }
