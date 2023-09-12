@@ -23,6 +23,7 @@ export function createRouterMatch(
   }
 
   function resolve(to: Readonly<RouteLocationOptions>) {
+    console.log('resolve',matcher,to)
     return matcher.find(match => match.path === to.path)
   }
 

@@ -1,3 +1,4 @@
+import { Component } from "vue"
 import { HistoryState } from "./history/common"
 
 export type RouteRecordName = string | symbol
@@ -28,4 +29,5 @@ export interface RouteLocationOptions {
   query?: LocationQueryRaw
   hash?: string
   path: string
+  components?:()=> Component
 }

@@ -6,6 +6,7 @@ export const router = createRouter({
     {
       path: '/',
       redirect: 'login',
+      component: () => import('./views/Home.vue'),
     },
     {
       path: '/login',
@@ -14,7 +15,7 @@ export const router = createRouter({
         title: 'login',
         hidden: true,
       },
-      component: () => import(/* webpackChunkName: "fake-login" */ './components/HelloWorld.vue'),
+      component: () => import('./views/Login.vue'),
     },
   ]
 })

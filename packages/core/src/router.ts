@@ -50,8 +50,7 @@ export function createRouter(options: RouterOptions) {
     from: RouteLocationOptions,
     replace?: boolean,
     data?: HistoryState
-  ) {
-    console.log('toLocation', toLocation)
+  ) { 
     if (replace) {
       // routerHistory.replace()
     } else {
@@ -67,11 +66,16 @@ export function createRouter(options: RouterOptions) {
   ): RouteLocationOptions {
     if (typeof to === 'string') {
       const query = parseQuery(to)
+      const match = matcher.resolve({
+        path: to,
+      }) 
       return {
         path: to,
+        ...match,
         query,
       }
     } else {
+      console.log('match',to)
       const match = matcher.resolve(to)
       return {
         ...to,
@@ -91,10 +95,8 @@ export function createRouter(options: RouterOptions) {
 
   const push = (
     to: RouteLocationOptions | string
-  ) => {
-    console.log('push', to)
-    const toLocation = resolve(to)
-    console.log('toLocation', toLocation)
+  ) => { 
+    const toLocation = resolve(to) 
     const data: HistoryState | undefined = toLocation.state
     finalizeNavigation(
       toLocation,
@@ -120,7 +122,8 @@ export function createRouter(options: RouterOptions) {
         !started
         && currentRoute.value === START_LOCATION_NORMALIZED) {
         started = true
-        push(routerHistory.location)
+        
+        push('/')
       }
 
       // app.config.globalProperties.
