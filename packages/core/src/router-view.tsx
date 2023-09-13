@@ -9,9 +9,9 @@ export const RouterView = defineComponent({
   setup(){
     const injectedRoute = inject<ShallowRef<RouteLocationOptions>>(routerViewLocationKey)!
     const viewRef = ref<ComponentPublicInstance>()
-    const matchRoute = computed(()=> injectedRoute.value.components)
+    const matchRoute = computed(()=> injectedRoute.value.component)
 
-    return ()=>{
+    return ()=>{ 
       const ViewComponent = matchRoute.value!
       const component = h(
         ViewComponent,

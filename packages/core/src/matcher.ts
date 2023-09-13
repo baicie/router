@@ -22,9 +22,16 @@ export function createRouterMatch(
     return matcher
   }
 
-  function resolve(to: Readonly<RouteLocationOptions>) {
-    console.log('resolve',matcher,to)
-    return matcher.find(match => match.path === to.path)
+  async function resolve(to: Readonly<RouteLocationOptions>) {
+    const match = matcher.find(match => match.path === to.path)
+
+    if (typeof match?.component === 'function') {
+      const result = await match.component()
+
+      match!.component = result.default
+    }
+
+    return match
   }
 
   function insterMatcher(record: ReturnType<typeof normalizeRouteRecord>) {

@@ -29,5 +29,5 @@ export interface RouteLocationOptions {
   query?: LocationQueryRaw
   hash?: string
   path: string
-  components?:()=> Component
+  component?: () => Component
 }

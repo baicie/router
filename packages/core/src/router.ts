@@ -50,7 +50,7 @@ export function createRouter(options: RouterOptions) {
     from: RouteLocationOptions,
     replace?: boolean,
     data?: HistoryState
-  ) { 
+  ) {
     if (replace) {
       // routerHistory.replace()
     } else {
@@ -61,22 +61,22 @@ export function createRouter(options: RouterOptions) {
   }
 
   // 处理push参数
-  function resolve(
+  async function resolve(
     to: Readonly<RouteLocationOptions | string>
-  ): RouteLocationOptions {
+  ): Promise<RouteLocationOptions> {
     if (typeof to === 'string') {
       const query = parseQuery(to)
-      const match = matcher.resolve({
+      const match = await matcher.resolve({
         path: to,
-      }) 
+      })
       return {
         path: to,
         ...match,
         query,
       }
     } else {
-      console.log('match',to)
-      const match = matcher.resolve(to)
+      console.log('match', to)
+      const match = await matcher.resolve(to)
       return {
         ...to,
         ...match
@@ -93,10 +93,10 @@ export function createRouter(options: RouterOptions) {
 
   const go = (delta: number) => routerHistory.go(delta)
 
-  const push = (
+  const push = async (
     to: RouteLocationOptions | string
-  ) => { 
-    const toLocation = resolve(to) 
+  ) => {
+    const toLocation = await resolve(to)
     const data: HistoryState | undefined = toLocation.state
     finalizeNavigation(
       toLocation,
@@ -122,7 +122,7 @@ export function createRouter(options: RouterOptions) {
         !started
         && currentRoute.value === START_LOCATION_NORMALIZED) {
         started = true
-        
+
         push('/')
       }
 

@@ -1,12 +1,12 @@
 import { createRouter, createWebHistory } from '@baicie/router';
+import Home from './views/Home.vue'
 
 export const router = createRouter({
   history: createWebHistory('/'),
   routes: [
     {
       path: '/',
-      redirect: 'login',
-      component: () => import('./views/Home.vue'),
+      component: Home,
     },
     {
       path: '/login',
@@ -16,6 +16,6 @@ export const router = createRouter({
         hidden: true,
       },
       component: () => import('./views/Login.vue'),
-    },
+    }
   ]
 })
